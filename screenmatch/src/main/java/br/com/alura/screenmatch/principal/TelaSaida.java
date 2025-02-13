@@ -1,61 +1,35 @@
 package br.com.alura.screenmatch.principal;
 
-import br.com.alura.screenmatch.dto.ChaveOmdb;
-import br.com.alura.screenmatch.model.DadosSerie;
-import br.com.alura.screenmatch.model.DadosTemporada;
-import br.com.alura.screenmatch.service.ConsumoApi;
-import br.com.alura.screenmatch.service.DadosConverter;
+import br.com.alura.screenmatch.model.*;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Scanner;
 
 public class TelaSaida {
-    private static ConsumoApi consumo = new ConsumoApi();
-    private static DadosConverter conversor = new DadosConverter();
 
-    private static final String ENDERECO = "https://www.omdbapi.com/?t=";
-    private static final String API_KEY = "&apikey=" + ChaveOmdb.getChave();
+    private static final DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public static void imprimeSeries(String nomeSerie) {
-        var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
-
-        Integer totTemporadas = TelaSaida.imprimeDadosSerie(json);
-
-        List<DadosTemporada> temporadas =
-                TelaSaida.imprimeDadosTemporada(nomeSerie, json, totTemporadas);
-
-        TelaSaida.imprimeTodosEpisodiosDaSeriePorTemporada(temporadas);
-    }
-
-    private static Integer imprimeDadosSerie(String json) {
-        DadosSerie dados = conversor.obterDados(json, DadosSerie.class);
+    public static void imprimeDadosSerie(DadosSerie dados) {
+        System.out.println("|nDados da Série: ");
         System.out.println(dados);
-        return dados.totalTemporadas();
     }
 
-    private static List<DadosTemporada> imprimeDadosTemporada(String nomeSerie, String json, Integer totalTemporadas) {
-
-        List<DadosTemporada> temporadas = new ArrayList<>();
-
-        for (int i = 1; i<=totalTemporadas; i++){
-            json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") +"&season=" + i + API_KEY);
-            DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
-            temporadas.add(dadosTemporada);
-        }
-
+    public static void imprimeDadosTemporada(List<DadosTemporada> temporadas) {
+        System.out.println("\nDados Temporada");
         temporadas.forEach(System.out::println);
-
-        return temporadas;
     }
 
-    private static void imprimeTodosEpisodiosDaSeriePorTemporada(List<DadosTemporada> temporadas) {
+    public static void imprimeTodosEpisodiosDaSeriePorTemporada(List<DadosTemporada> temporadas) {
 
-//        for(int i = 0; i < dados.totalTemporadas(); i++){
-//            List<DadosEpisodio> episodiosTemporada = temporadas.get(i).episodios();
-//            for(int j = 0; j< episodiosTemporada.size(); j++){
-//                System.out.println(episodiosTemporada.get(j).titulo());
-//            }
-//        }
+        //for(int i = 0; i < dados.totalTemporadas(); i++){
+        //     List<DadosEpisodio> episodiosTemporada = temporadas.get(i).episodios();
+        //     for(int j = 0; j< episodiosTemporada.size(); j++){
+        //         System.out.println(episodiosTemporada.get(j).titulo());
+        //     }
+        // }
 
         temporadas.forEach(t -> {
             System.out.println("\nTemporada " + t.numero());
@@ -64,6 +38,69 @@ public class TelaSaida {
                             e.titulo() + " " +
                             e.dataLancamento()));
         });
+
+    }
+
+    public static void imprimeTop5EpisodiosOld(List<DadosTemporada> temporadas){
+
+        System.out.println("\nTop 5 episódios");
+
+        List<DadosEpisodio> dadosEpisodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream())
+                .toList();
+
+        dadosEpisodios.stream()
+                .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
+                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
+                .limit(5)
+                .forEach(System.out::println);
+
+
+
+
+    }
+
+    public static void imprimeTop5Episodios(List<DadosTemporada> temporadas){
+
+        System.out.println("\nTop 5 episódios");
+
+        List<Episodio> episodios =  temporadas.stream()
+                .flatMap(t -> t.episodios().stream()
+                        .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
+                        .map(d -> new Episodio(t.numero(), d))
+                )
+                .toList();
+
+        episodios.stream()
+                .sorted(Comparator.comparing(Episodio::getAvaliacao).reversed())
+                .limit(5)
+                .forEach(System.out::println);
+
+    }
+
+    public static void imprimeEpisodiosPorTemporada(List<Episodio> episodios){
+
+        System.out.println("\nEpisódios por temporada");
+
+        episodios.forEach(System.out::println);
+    }
+
+    public static void imprimeEpisodiosAPartirData(Scanner leitura, List<Episodio> episodios) {
+
+        System.out.println("\nA partir de que ano você deseja visualizar os episódios? ");
+        var ano = leitura.nextInt();
+        leitura.nextLine();
+
+        LocalDate dataBusca = LocalDate.of(ano, 1, 1);
+
+        episodios.stream()
+                .filter(e -> e.getDataLancamento() != null && e.getDataLancamento().isAfter(dataBusca))
+                .forEach(e -> System.out.println(
+                        "Temporada: " + e.getTemporada() +
+                                " Episódio: " + e.getNumero() + ". " + e.getTitulo() +
+                                " Data Lançamento: " + e.getDataLancamento().format(formatador)
+                ));
+
 
     }
 
