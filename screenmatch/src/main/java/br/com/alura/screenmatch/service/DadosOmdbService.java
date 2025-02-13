@@ -21,12 +21,13 @@ public class DadosOmdbService {
     private static DadosOmdb dadosOmdb = new DadosOmdb();
 
     public static DadosOmdb inicie(String nomeSerie){
-        var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
 
-        if (StringUtil.isNullOrEmpty(json)) {
-            lanceMensagem("Não foi possível encontrar dados da série " + nomeSerie);
+        if (StringUtil.isNullOrEmpty(nomeSerie) || nomeSerie.trim().isEmpty()) {
+            lanceMensagem("Informe algum nome de série! \nTecle ENTER p/ continuar... ");
             return null;
         }
+
+        var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
 
         recupereDadosSerie(json);
 
@@ -35,7 +36,7 @@ public class DadosOmdbService {
         try {
             totTemporadas = Integer.parseInt(dadosOmdb.getDadosSerie().totalTemporadas());
         } catch (NumberFormatException e) {
-            lanceMensagem("Não foi possível encontrar dados da série " + nomeSerie);
+            lanceMensagem("Não foi possível encontrar dados da série " + nomeSerie + "\nTecle ENTER para continuar");
             return null;
         }
 

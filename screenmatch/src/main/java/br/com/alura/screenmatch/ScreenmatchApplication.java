@@ -17,7 +17,7 @@ public class ScreenmatchApplication implements CommandLineRunner {
 
 		TelaEntrada console = new TelaEntrada();
 		console.exibeMenu();
-
+		System.out.println("Obrigado por usar o Screen Match!");
 	}
 
 }

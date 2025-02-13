@@ -85,11 +85,7 @@ public class TelaSaida {
         episodios.forEach(System.out::println);
     }
 
-    public static void imprimeEpisodiosAPartirData(Scanner leitura, List<Episodio> episodios) {
-
-        System.out.println("\nA partir de que ano você deseja visualizar os episódios? ");
-        var ano = leitura.nextInt();
-        leitura.nextLine();
+    public static void imprimeEpisodiosAPartirData(Integer ano, List<Episodio> episodios) {
 
         LocalDate dataBusca = LocalDate.of(ano, 1, 1);
 
