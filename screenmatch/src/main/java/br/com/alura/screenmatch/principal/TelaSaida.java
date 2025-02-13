@@ -6,14 +6,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Scanner;
 
 public class TelaSaida {
 
     private static final DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public static void imprimeDadosSerie(DadosSerie dados) {
-        System.out.println("|nDados da Série: ");
+        System.out.println("\nDados da Série: ");
         System.out.println(dados);
     }
 
@@ -31,6 +30,7 @@ public class TelaSaida {
         //     }
         // }
 
+        System.out.println("\nEpisódios da série por temporada");
         temporadas.forEach(t -> {
             System.out.println("\nTemporada " + t.numero());
             t.episodios().forEach(e -> System.out.println(
@@ -43,7 +43,7 @@ public class TelaSaida {
 
     public static void imprimeTop5EpisodiosOld(List<DadosTemporada> temporadas){
 
-        System.out.println("\nTop 5 episódios");
+        System.out.println("\nTop 5 episódios com Dados Episódio");
 
         List<DadosEpisodio> dadosEpisodios = temporadas.stream()
                 .flatMap(t -> t.episodios().stream())
@@ -62,7 +62,7 @@ public class TelaSaida {
 
     public static void imprimeTop5Episodios(List<DadosTemporada> temporadas){
 
-        System.out.println("\nTop 5 episódios");
+        System.out.println("\nTop 5 episódios com a classe Episódio");
 
         List<Episodio> episodios =  temporadas.stream()
                 .flatMap(t -> t.episodios().stream()
