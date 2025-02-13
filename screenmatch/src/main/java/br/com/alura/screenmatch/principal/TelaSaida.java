@@ -8,34 +8,47 @@ import br.com.alura.screenmatch.service.DadosConverter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-public class Principal {
+public class TelaSaida {
+    private static ConsumoApi consumo = new ConsumoApi();
+    private static DadosConverter conversor = new DadosConverter();
 
-    private Scanner leitura = new Scanner(System.in);
-    private ConsumoApi consumo = new ConsumoApi();
-    private DadosConverter conversor = new DadosConverter();
+    private static final String ENDERECO = "https://www.omdbapi.com/?t=";
+    private static final String API_KEY = "&apikey=" + ChaveOmdb.getChave();
 
-    private final String ENDERECO = "https://www.omdbapi.com/?t=";
-    private final String API_KEY = "&apikey=" + ChaveOmdb.getChave();
-
-    public void exibeMenu(){
-        System.out.println("Digite o nome da série para busca");
-        var nomeSerie = leitura.nextLine();
+    public static void imprimeSeries(String nomeSerie) {
         var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
+
+        Integer totTemporadas = TelaSaida.imprimeDadosSerie(json);
+
+        List<DadosTemporada> temporadas =
+                TelaSaida.imprimeDadosTemporada(nomeSerie, json, totTemporadas);
+
+        TelaSaida.imprimeTodosEpisodiosDaSeriePorTemporada(temporadas);
+    }
+
+    private static Integer imprimeDadosSerie(String json) {
         DadosSerie dados = conversor.obterDados(json, DadosSerie.class);
         System.out.println(dados);
+        return dados.totalTemporadas();
+    }
+
+    private static List<DadosTemporada> imprimeDadosTemporada(String nomeSerie, String json, Integer totalTemporadas) {
 
         List<DadosTemporada> temporadas = new ArrayList<>();
 
-        int totTemporadas = dados.totalTemporadas();
-
-        for (int i = 1; i<=totTemporadas; i++){
+        for (int i = 1; i<=totalTemporadas; i++){
             json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") +"&season=" + i + API_KEY);
             DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
             temporadas.add(dadosTemporada);
         }
+
         temporadas.forEach(System.out::println);
+
+        return temporadas;
+    }
+
+    private static void imprimeTodosEpisodiosDaSeriePorTemporada(List<DadosTemporada> temporadas) {
 
 //        for(int i = 0; i < dados.totalTemporadas(); i++){
 //            List<DadosEpisodio> episodiosTemporada = temporadas.get(i).episodios();
@@ -48,8 +61,10 @@ public class Principal {
             System.out.println("\nTemporada " + t.numero());
             t.episodios().forEach(e -> System.out.println(
                     e.numero() + " " +
-                    e.titulo() + " " +
-                    e.dataLancamento()));
+                            e.titulo() + " " +
+                            e.dataLancamento()));
         });
+
     }
+
 }
